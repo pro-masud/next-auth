@@ -5,21 +5,14 @@ import { FormEvent, useEffect, useState } from "react";
 
 type Theme = "light" | "dark";
 type FormValues = {
-  name: string;
   email: string;
   password: string;
-  confirmPassword: string;
 };
 type FormErrors = Partial<Record<keyof FormValues, string>>;
 
-const initialValues: FormValues = {
-  name: "",
-  email: "",
-  password: "",
-  confirmPassword: "",
-};
+const initialValues: FormValues = { email: "", password: "" };
 
-export default function RegisterPage() {
+export default function LoginPage() {
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window === "undefined") return "light";
 
@@ -55,24 +48,12 @@ export default function RegisterPage() {
 
   function validateForm(formValues: FormValues): FormErrors {
     const nextErrors: FormErrors = {};
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (formValues.name.trim().length < 2) {
-      nextErrors.name = "Please enter your full name.";
-    }
-    if (!emailPattern.test(formValues.email)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formValues.email)) {
       nextErrors.email = "Please enter a valid email address.";
     }
-    if (formValues.password.length < 8) {
-      nextErrors.password = "Use at least 8 characters.";
-    } else if (
-      !/[A-Z]/.test(formValues.password) ||
-      !/[0-9]/.test(formValues.password)
-    ) {
-      nextErrors.password = "Add at least one uppercase letter and one number.";
-    }
-    if (formValues.confirmPassword !== formValues.password) {
-      nextErrors.confirmPassword = "Passwords do not match.";
+    if (!formValues.password) {
+      nextErrors.password = "Please enter your password.";
     }
 
     return nextErrors;
@@ -88,18 +69,14 @@ export default function RegisterPage() {
       | keyof FormValues
       | undefined;
     if (firstError) {
-      document
-        .getElementById(
-          firstError === "confirmPassword" ? "confirm-password" : firstError,
-        )
-        ?.focus();
+      document.getElementById(firstError)?.focus();
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/register", {
+      const response = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
@@ -110,34 +87,17 @@ export default function RegisterPage() {
       };
 
       if (!response.ok) {
-        if (response.status === 409) {
-          setErrors({
-            email: result.error ?? "This email is already registered.",
-          });
-        } else {
-          setMessage(
-            result.error ?? "We could not create your account right now.",
-          );
-        }
+        setMessage(result.error ?? "Email or password is incorrect.");
         return;
       }
 
-      setMessage(result.message ?? "Your account has been created.");
-      setValues(initialValues);
+      window.location.assign("/dashboard");
     } catch {
-      setMessage("We could not connect to the registration service.");
+      setMessage("We could not connect to the login service.");
     } finally {
       setIsSubmitting(false);
     }
   }
-
-  const passwordHint = !values.password
-    ? "Use 8+ characters, one uppercase letter, and one number."
-    : values.password.length >= 8 &&
-        /[A-Z]/.test(values.password) &&
-        /[0-9]/.test(values.password)
-      ? "Strong password"
-      : "Keep going: 8+ characters, one uppercase letter, and one number.";
 
   return (
     <div className="auth-shell">
@@ -161,38 +121,16 @@ export default function RegisterPage() {
         </button>
       </header>
 
-      <main className="auth-main">
+      <main className="auth-main login-main">
         <section className="auth-intro">
-          <p className="eyebrow">Begin here</p>
+          <p className="eyebrow">Welcome back</p>
           <h1>
-            Create your <em>space.</em>
+            Good to <em>see you.</em>
           </h1>
-          <p>
-            Join Nikboni with a simple account. You can always change your
-            details later.
-          </p>
+          <p>Sign in to continue your quiet corner of Nikboni.</p>
         </section>
 
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
-          <label htmlFor="name">
-            Full name
-            <input
-              id="name"
-              name="name"
-              type="text"
-              placeholder="Your name"
-              value={values.name}
-              onChange={(event) => handleChange("name", event.target.value)}
-              aria-invalid={Boolean(errors.name)}
-              aria-describedby={errors.name ? "name-error" : undefined}
-              aria-required="true"
-            />
-            {errors.name && (
-              <span className="field-error" id="name-error">
-                {errors.name}
-              </span>
-            )}
-          </label>
           <label htmlFor="email">
             Email address
             <input
@@ -218,50 +156,21 @@ export default function RegisterPage() {
               id="password"
               name="password"
               type="password"
-              placeholder="At least 8 characters"
+              placeholder="Your password"
               value={values.password}
               onChange={(event) => handleChange("password", event.target.value)}
               aria-invalid={Boolean(errors.password)}
-              aria-describedby="password-hint password-error"
+              aria-describedby={errors.password ? "password-error" : undefined}
               aria-required="true"
             />
-            <span
-              className={`password-hint ${values.password && !errors.password ? "is-valid" : ""}`}
-              id="password-hint"
-            >
-              {passwordHint}
-            </span>
             {errors.password && (
               <span className="field-error" id="password-error">
                 {errors.password}
               </span>
             )}
           </label>
-          <label htmlFor="confirm-password">
-            Confirm password
-            <input
-              id="confirm-password"
-              name="confirm-password"
-              type="password"
-              placeholder="Repeat your password"
-              value={values.confirmPassword}
-              onChange={(event) =>
-                handleChange("confirmPassword", event.target.value)
-              }
-              aria-invalid={Boolean(errors.confirmPassword)}
-              aria-describedby={
-                errors.confirmPassword ? "confirm-password-error" : undefined
-              }
-              aria-required="true"
-            />
-            {errors.confirmPassword && (
-              <span className="field-error" id="confirm-password-error">
-                {errors.confirmPassword}
-              </span>
-            )}
-          </label>
           <button className="auth-submit" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Creating account..." : "Create account"}
+            {isSubmitting ? "Signing in..." : "Sign in"}
             {!isSubmitting && <span aria-hidden="true">↗</span>}
           </button>
           {message && (
@@ -270,7 +179,7 @@ export default function RegisterPage() {
             </p>
           )}
           <p className="auth-switch">
-            Already have an account? <Link href="/login">Sign in</Link>
+            New to Nikboni? <Link href="/register">Create an account</Link>
           </p>
         </form>
       </main>
