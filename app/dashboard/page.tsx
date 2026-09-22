@@ -1,3 +1,4 @@
+import ThemeToggle from "@/components/ThemeToggle";
 import { getSessionCustomerId } from "@/lib/auth";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -93,6 +94,7 @@ export default async function DashboardPage() {
         <span>© {new Date().getFullYear()} Nikboni</span>
         <span>Your information stays yours.</span>
       </footer>
+      <ThemeToggle />
     </div>
   );
 }

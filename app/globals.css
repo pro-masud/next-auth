@@ -119,21 +119,51 @@ button {
 }
 
 .theme-toggle {
-  gap: 9px;
+  position: fixed;
+  right: 28px;
+  bottom: 28px;
+  z-index: 20;
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
   padding: 0;
-  border: 0;
-  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
   color: var(--foreground);
   cursor: pointer;
-  font-family: Arial, sans-serif;
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 10%);
+  transition:
+    background-color 200ms ease,
+    border-color 200ms ease,
+    transform 200ms ease;
 }
 
-.theme-toggle > span:first-child {
-  font-size: 1.3rem;
-  line-height: 1;
+.theme-toggle svg {
+  width: 21px;
+  height: 21px;
+}
+
+.theme-toggle:hover {
+  border-color: var(--foreground);
+  transform: translateY(-3px);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 4px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .main-content {
@@ -552,10 +582,6 @@ h2 {
     display: none;
   }
 
-  .toggle-label {
-    display: none;
-  }
-
   .intro {
     padding-top: 105px;
   }
@@ -597,6 +623,11 @@ h2 {
 
   .account-details {
     grid-template-columns: 1fr;
+  }
+
+  .theme-toggle {
+    right: 18px;
+    bottom: 18px;
   }
 
   h1 {

@@ -1,9 +1,9 @@
 "use client";
 
+import ThemeToggle from "@/components/ThemeToggle";
 import Link from "next/link";
-import { FormEvent, useEffect, useState } from "react";
-
-type Theme = "light" | "dark";
+import { useRouter } from "next/navigation";
+import { FormEvent, useState } from "react";
 type FormValues = {
   email: string;
   password: string;
@@ -13,32 +13,11 @@ type FormErrors = Partial<Record<keyof FormValues, string>>;
 const initialValues: FormValues = { email: "", password: "" };
 
 export default function LoginPage() {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window === "undefined") return "light";
-
-    const savedTheme = window.localStorage.getItem("nikboni-theme");
-    if (savedTheme === "dark" || savedTheme === "light") return savedTheme;
-
-    return window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
-  });
+  const router = useRouter();
   const [values, setValues] = useState<FormValues>(initialValues);
   const [errors, setErrors] = useState<FormErrors>({});
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-  }, [theme]);
-
-  function toggleTheme() {
-    const nextTheme = theme === "light" ? "dark" : "light";
-
-    setTheme(nextTheme);
-    document.documentElement.dataset.theme = nextTheme;
-    window.localStorage.setItem("nikboni-theme", nextTheme);
-  }
 
   function handleChange(name: keyof FormValues, value: string) {
     setValues((currentValues) => ({ ...currentValues, [name]: value }));
@@ -91,7 +70,7 @@ export default function LoginPage() {
         return;
       }
 
-      window.location.assign("/dashboard");
+      router.replace("/dashboard");
     } catch {
       setMessage("We could not connect to the login service.");
     } finally {
@@ -106,19 +85,6 @@ export default function LoginPage() {
           <span className="brand-mark">N</span>
           <span>Nikboni</span>
         </Link>
-
-        <button
-          className="theme-toggle"
-          type="button"
-          onClick={toggleTheme}
-          aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
-          title={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
-        >
-          <span aria-hidden="true">{theme === "light" ? "◐" : "○"}</span>
-          <span className="toggle-label">
-            {theme === "light" ? "Dark" : "Light"}
-          </span>
-        </button>
       </header>
 
       <main className="auth-main login-main">
@@ -188,6 +154,7 @@ export default function LoginPage() {
         <span>© {new Date().getFullYear()} Nikboni</span>
         <span>Quietly made for the curious.</span>
       </footer>
+      <ThemeToggle />
     </div>
   );
 }

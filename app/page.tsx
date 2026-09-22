@@ -1,33 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
-type Theme = "light" | "dark";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Home() {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window === "undefined") return "light";
-
-    const savedTheme = window.localStorage.getItem("nikboni-theme");
-    if (savedTheme === "dark" || savedTheme === "light") return savedTheme;
-
-    return window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
-  });
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-  }, [theme]);
-
-  function toggleTheme() {
-    const nextTheme = theme === "light" ? "dark" : "light";
-
-    setTheme(nextTheme);
-    document.documentElement.dataset.theme = nextTheme;
-    window.localStorage.setItem("nikboni-theme", nextTheme);
-  }
-
   return (
     <div className="site-shell">
       <header className="site-header">
@@ -42,19 +17,6 @@ export default function Home() {
           <a href="/login">Login</a>
           <a href="/register">Register</a>
         </nav>
-
-        <button
-          className="theme-toggle"
-          type="button"
-          onClick={toggleTheme}
-          aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
-          title={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
-        >
-          <span aria-hidden="true">{theme === "light" ? "◐" : "○"}</span>
-          <span className="toggle-label">
-            {theme === "light" ? "Dark" : "Light"}
-          </span>
-        </button>
       </header>
 
       <main id="top" className="main-content">
@@ -111,6 +73,7 @@ export default function Home() {
           <span>Built with intention.</span>
         </div>
       </footer>
+      <ThemeToggle />
     </div>
   );
 }
