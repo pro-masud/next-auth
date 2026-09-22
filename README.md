@@ -1,37 +1,96 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# next-auth
+
+Nikboni is a small Next.js authentication project with a quiet black-and-white interface. It currently includes a responsive registration page, light and dark modes, client-side form validation, and a local registration API backed by a JSON file.
+
+## Features
+
+- Responsive Nikboni landing page and registration page
+- Light and dark mode with the preference saved in `localStorage`
+- Registration validation for name, email, password strength, and password confirmation
+- Accessible inline form errors and loading/success states
+- Duplicate email detection
+- Password hashing with Node.js `scrypt` before local storage
+- Local customer records stored outside the public web directory
+
+## Routes
+
+| Route                | Purpose                   |
+| -------------------- | ------------------------- |
+| `/`                  | Nikboni homepage          |
+| `/register`          | Registration form         |
+| `POST /api/register` | Creates a customer record |
+
+## Requirements
+
+- Node.js 20.9 or newer
+- npm
 
 ## Getting Started
 
-First, run the development server:
+Install dependencies:
+
+```bash
+npm install
+```
+
+Start the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser. The registration page is available at [http://localhost:3000/register](http://localhost:3000/register).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Available Commands
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run dev       # Start the development server
+npm run lint      # Run ESLint
+npm run build     # Create a production build
+npm run start     # Start the production server
+```
+
+## Local Registration Storage
+
+For local development, registration records are saved in:
+
+```text
+.data/registration/customers.json
+```
+
+Each record contains this shape:
+
+```json
+{
+  "id": "generated-id",
+  "name": "Customer name",
+  "email": "customer@example.com",
+  "passwordHash": "salt:derived-key",
+  "createdAt": "2026-09-22T00:00:00.000Z"
+}
+```
+
+The `.data` directory is ignored by Git because it may contain customer information. Do not commit real customer data or expose this directory through a public route.
+
+## Project Structure
+
+```text
+app/
+	api/register/route.ts       Registration API and JSON persistence
+	register/page.tsx            Registration UI and client validation
+	globals.css                  Shared Nikboni theme and responsive styles
+	layout.tsx                   Root layout and metadata
+	page.tsx                     Homepage
+.data/
+	registration/customers.json  Local customer records
+```
+
+## Current Scope
+
+The registration flow is ready for local development. Login, sessions, logout, email verification, and production database storage are not connected yet. For production use, replace the JSON file with a real database and add a dedicated session/authentication layer.
 
 ## Learn More
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# next-auth
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Next.js App Router](https://nextjs.org/docs/app)
+- [Node.js Crypto Documentation](https://nodejs.org/api/crypto.html)
