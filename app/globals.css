@@ -465,6 +465,93 @@ h2 {
   font-size: 1.1rem;
 }
 
+.admin-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.admin-badge {
+  color: var(--muted);
+  font-family: Arial, sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 25px;
+  margin-bottom: 100px;
+}
+
+.admin-stat {
+  min-height: 165px;
+  padding: 25px 0;
+  border-top: 1px solid var(--line);
+}
+
+.admin-stat .number {
+  margin-bottom: 23px;
+}
+
+.admin-stat strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: clamp(1.8rem, 3vw, 2.7rem);
+  font-weight: 400;
+  letter-spacing: -0.05em;
+  line-height: 1;
+}
+
+.admin-stat p {
+  margin: 0;
+  color: var(--muted);
+  font-family: Arial, sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.customer-list {
+  padding-top: 35px;
+  border-top: 1px solid var(--line);
+}
+
+.customer-table-wrap {
+  margin-top: 45px;
+  overflow-x: auto;
+}
+
+.customer-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  text-align: left;
+}
+
+.customer-table th {
+  padding: 0 18px 15px 0;
+  color: var(--muted);
+  font-family: Arial, sans-serif;
+  font-size: 0.64rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.customer-table td {
+  padding: 18px 18px 18px 0;
+  border-top: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.customer-table td:not(:first-child) {
+  color: var(--muted);
+}
+
 .auth-form input {
   width: 100%;
   padding: 13px 0;
@@ -623,6 +710,28 @@ h2 {
 
   .account-details {
     grid-template-columns: 1fr;
+  }
+
+  .admin-header-actions {
+    gap: 12px;
+  }
+
+  .admin-badge {
+    display: none;
+  }
+
+  .admin-stats {
+    grid-template-columns: 1fr;
+    gap: 0;
+    margin-bottom: 75px;
+  }
+
+  .admin-stat {
+    min-height: auto;
+  }
+
+  .customer-table-wrap {
+    margin-top: 35px;
   }
 
   .theme-toggle {

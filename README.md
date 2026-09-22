@@ -13,18 +13,21 @@ Nikboni is a small Next.js authentication project with a quiet black-and-white i
 - Auth.js credential provider with encrypted JWT sessions
 - Protected dashboard with Auth.js server-side session checks
 - Auth.js sign-in and sign-out flows
+- Customer and administrator roles with a separate admin dashboard
+- Registration count, login count, and last-login activity for administrators
 - Local customer records stored outside the public web directory
 
 ## Routes
 
-| Route                     | Purpose                   |
-| ------------------------- | ------------------------- |
-| `/`                       | Nikboni homepage          |
-| `/register`               | Registration form         |
-| `/login`                  | Auth.js login form        |
-| `/dashboard`              | Protected customer area   |
-| `POST /api/register`      | Creates a customer record |
-| `/api/auth/[...nextauth]` | Auth.js session endpoints |
+| Route                     | Purpose                      |
+| ------------------------- | ---------------------------- |
+| `/`                       | Nikboni homepage             |
+| `/register`               | Registration form            |
+| `/login`                  | Auth.js login form           |
+| `/dashboard`              | Protected customer area      |
+| `/admin`                  | Protected administrator area |
+| `POST /api/register`      | Creates a customer record    |
+| `/api/auth/[...nextauth]` | Auth.js session endpoints    |
 
 ## Requirements
 
@@ -47,7 +50,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser. The registration page is available at [http://localhost:3000/register](http://localhost:3000/register).
 
-Auth.js requires `AUTH_SECRET`. A local secret is provided in `.env.local`; use a new strong secret for every deployed environment.
+Auth.js requires `AUTH_SECRET`. A local secret is provided in `.env.local`; use a new strong secret for every deployed environment. Set `AUTH_ADMIN_EMAIL` to the email of the registered account that should access `/admin`. That account will be promoted to administrator on its next login.
 
 ## Available Commands
 
@@ -74,7 +77,10 @@ Each record contains this shape:
   "name": "Customer name",
   "email": "customer@example.com",
   "passwordHash": "salt:derived-key",
-  "createdAt": "2026-09-22T00:00:00.000Z"
+  "createdAt": "2026-09-22T00:00:00.000Z",
+  "role": "customer",
+  "loginCount": 0,
+  "lastLoginAt": null
 }
 ```
 
@@ -89,17 +95,19 @@ app/
 	dashboard/page.tsx          Protected dashboard
 	login/page.tsx              Auth.js login UI
 	register/page.tsx            Registration UI and client validation
+	admin/page.tsx                Protected administrator dashboard
 	globals.css                  Shared Nikboni theme and responsive styles
 	layout.tsx                   Root layout and metadata
 	page.tsx                     Homepage
 auth.ts                         Auth.js credentials provider and callbacks
+.env.example                    Auth.js and administrator configuration template
 .data/
 	registration/customers.json  Local customer records
 ```
 
 ## Current Scope
 
-Registration and credential login are connected through Auth.js. Customer records are still stored in a local JSON file for development. Before production, replace that file with a database, configure a deployment-specific `AUTH_SECRET`, and add email verification, password reset, rate limiting, and account recovery.
+Registration and credential login are connected through Auth.js. Customer records are still stored in a local JSON file for development. Before production, replace that file with a database, configure a deployment-specific `AUTH_SECRET`, protect `AUTH_ADMIN_EMAIL`, and add email verification, password reset, rate limiting, and account recovery.
 
 ## Learn More
 

@@ -11,6 +11,7 @@ type CustomerRecord = {
   name: string;
   email: string;
   createdAt: string;
+  role?: "customer" | "administrator";
 };
 
 async function getCustomer(customerId: string) {
@@ -29,6 +30,7 @@ export default async function DashboardPage() {
   const session = await auth();
   const customerId = session?.user?.id;
   if (!customerId) redirect("/login");
+  if (session.user.role === "administrator") redirect("/admin");
 
   let customer: CustomerRecord | null = null;
   try {

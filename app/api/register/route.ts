@@ -18,6 +18,9 @@ type CustomerRecord = {
   email: string;
   passwordHash: string;
   createdAt: string;
+  role: "customer";
+  loginCount: number;
+  lastLoginAt?: string;
 };
 
 type RegistrationPayload = {
@@ -79,6 +82,8 @@ export async function POST(request: Request) {
       email,
       passwordHash: await hashPassword(password),
       createdAt: new Date().toISOString(),
+      role: "customer",
+      loginCount: 0,
     };
 
     customers.push(customer);

@@ -19,6 +19,9 @@ type CustomerRecord = {
   email: string;
   passwordHash: string;
   createdAt: string;
+  role?: "customer" | "administrator";
+  loginCount?: number;
+  lastLoginAt?: string;
 };
 
 async function readCustomers(): Promise<CustomerRecord[]> {
@@ -30,6 +33,15 @@ async function readCustomers(): Promise<CustomerRecord[]> {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
     throw error;
   }
+}
+
+async function writeCustomers(customers: CustomerRecord[]) {
+  await fs.mkdir(path.dirname(customersFile), { recursive: true });
+  await fs.writeFile(
+    customersFile,
+    `${JSON.stringify(customers, null, 2)}\n`,
+    "utf8",
+  );
 }
 
 async function passwordMatches(password: string, storedHash: string) {
@@ -64,7 +76,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!email || !password) return null;
 
         const customers = await readCustomers();
-        const customer = customers.find((item) => item.email === email);
+        const customerIndex = customers.findIndex(
+          (item) => item.email === email,
+        );
+        const customer = customers[customerIndex];
         if (
           !customer ||
           !(await passwordMatches(password, customer.passwordHash))
@@ -72,22 +87,39 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
+        const role =
+          process.env.AUTH_ADMIN_EMAIL?.trim().toLowerCase() === email
+            ? "administrator"
+            : (customer.role ?? "customer");
+        customers[customerIndex] = {
+          ...customer,
+          role,
+          loginCount: (customer.loginCount ?? 0) + 1,
+          lastLoginAt: new Date().toISOString(),
+        };
+        await writeCustomers(customers);
+
         return {
           id: customer.id,
           name: customer.name,
           email: customer.email,
+          role,
         };
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user }) {
-      if (user) token.customerId = user.id;
+      if (user) {
+        token.customerId = user.id;
+        token.role = user.role as "customer" | "administrator";
+      }
       return token;
     },
     async session({ session, token }) {
       if (session.user && token.customerId) {
         session.user.id = token.customerId as string;
+        session.user.role = token.role as "customer" | "administrator";
       }
       return session;
     },
