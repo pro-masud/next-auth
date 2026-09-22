@@ -1,6 +1,6 @@
 # next-auth
 
-Nikboni is a small Next.js authentication project with a quiet black-and-white interface. It currently includes a responsive registration page, light and dark modes, client-side form validation, and a local registration API backed by a JSON file.
+Nikboni is a small Next.js authentication project with a quiet black-and-white interface. It includes registration, Auth.js credential authentication, protected dashboard access, light and dark modes, client-side form validation, and local customer records backed by a JSON file.
 
 ## Features
 
@@ -10,15 +10,21 @@ Nikboni is a small Next.js authentication project with a quiet black-and-white i
 - Accessible inline form errors and loading/success states
 - Duplicate email detection
 - Password hashing with Node.js `scrypt` before local storage
+- Auth.js credential provider with encrypted JWT sessions
+- Protected dashboard with Auth.js server-side session checks
+- Auth.js sign-in and sign-out flows
 - Local customer records stored outside the public web directory
 
 ## Routes
 
-| Route                | Purpose                   |
-| -------------------- | ------------------------- |
-| `/`                  | Nikboni homepage          |
-| `/register`          | Registration form         |
-| `POST /api/register` | Creates a customer record |
+| Route                     | Purpose                   |
+| ------------------------- | ------------------------- |
+| `/`                       | Nikboni homepage          |
+| `/register`               | Registration form         |
+| `/login`                  | Auth.js login form        |
+| `/dashboard`              | Protected customer area   |
+| `POST /api/register`      | Creates a customer record |
+| `/api/auth/[...nextauth]` | Auth.js session endpoints |
 
 ## Requirements
 
@@ -40,6 +46,8 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser. The registration page is available at [http://localhost:3000/register](http://localhost:3000/register).
+
+Auth.js requires `AUTH_SECRET`. A local secret is provided in `.env.local`; use a new strong secret for every deployed environment.
 
 ## Available Commands
 
@@ -76,18 +84,22 @@ The `.data` directory is ignored by Git because it may contain customer informat
 
 ```text
 app/
+	api/auth/[...nextauth]/     Auth.js route handlers
 	api/register/route.ts       Registration API and JSON persistence
+	dashboard/page.tsx          Protected dashboard
+	login/page.tsx              Auth.js login UI
 	register/page.tsx            Registration UI and client validation
 	globals.css                  Shared Nikboni theme and responsive styles
 	layout.tsx                   Root layout and metadata
 	page.tsx                     Homepage
+auth.ts                         Auth.js credentials provider and callbacks
 .data/
 	registration/customers.json  Local customer records
 ```
 
 ## Current Scope
 
-The registration flow is ready for local development. Login, sessions, logout, email verification, and production database storage are not connected yet. For production use, replace the JSON file with a real database and add a dedicated session/authentication layer.
+Registration and credential login are connected through Auth.js. Customer records are still stored in a local JSON file for development. Before production, replace that file with a database, configure a deployment-specific `AUTH_SECRET`, and add email verification, password reset, rate limiting, and account recovery.
 
 ## Learn More
 

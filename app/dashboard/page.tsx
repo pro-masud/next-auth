@@ -1,5 +1,5 @@
+import { auth } from "@/auth";
 import ThemeToggle from "@/components/ThemeToggle";
-import { getSessionCustomerId } from "@/lib/auth";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { promises as fs } from "node:fs";
@@ -26,7 +26,8 @@ async function getCustomer(customerId: string) {
 }
 
 export default async function DashboardPage() {
-  const customerId = await getSessionCustomerId();
+  const session = await auth();
+  const customerId = session?.user?.id;
   if (!customerId) redirect("/login");
 
   let customer: CustomerRecord | null = null;

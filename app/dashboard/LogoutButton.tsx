@@ -1,5 +1,6 @@
 "use client";
 
+import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -9,9 +10,8 @@ export default function LogoutButton() {
 
   async function handleLogout() {
     setIsLoggingOut(true);
-    await fetch("/api/logout", { method: "POST" });
+    await signOut({ redirect: false });
     router.replace("/login");
-    router.refresh();
   }
 
   return (

@@ -1,6 +1,7 @@
 "use client";
 
 import ThemeToggle from "@/components/ThemeToggle";
+import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
@@ -55,18 +56,14 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+      const result = await signIn("credentials", {
+        email: values.email,
+        password: values.password,
+        redirect: false,
       });
-      const result = (await response.json()) as {
-        error?: string;
-        message?: string;
-      };
 
-      if (!response.ok) {
-        setMessage(result.error ?? "Email or password is incorrect.");
+      if (result?.error) {
+        setMessage("Email or password is incorrect.");
         return;
       }
 
