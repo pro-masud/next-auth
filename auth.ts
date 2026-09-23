@@ -1,60 +1,10 @@
+import {
+  passwordMatches,
+  readCustomers,
+  writeCustomers,
+} from "@/lib/customers";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { scrypt as scryptCallback, timingSafeEqual } from "node:crypto";
-import { promises as fs } from "node:fs";
-import path from "node:path";
-import { promisify } from "node:util";
-
-const scrypt = promisify(scryptCallback);
-const customersFile = path.join(
-  process.cwd(),
-  ".data",
-  "registration",
-  "customers.json",
-);
-
-type CustomerRecord = {
-  id: string;
-  name: string;
-  email: string;
-  passwordHash: string;
-  createdAt: string;
-  role?: "customer" | "administrator";
-  loginCount?: number;
-  lastLoginAt?: string;
-};
-
-async function readCustomers(): Promise<CustomerRecord[]> {
-  try {
-    const file = await fs.readFile(customersFile, "utf8");
-    const parsed = JSON.parse(file);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
-    throw error;
-  }
-}
-
-async function writeCustomers(customers: CustomerRecord[]) {
-  await fs.mkdir(path.dirname(customersFile), { recursive: true });
-  await fs.writeFile(
-    customersFile,
-    `${JSON.stringify(customers, null, 2)}\n`,
-    "utf8",
-  );
-}
-
-async function passwordMatches(password: string, storedHash: string) {
-  const [salt, key] = storedHash.split(":");
-  if (!salt || !key) return false;
-
-  const derivedKey = (await scrypt(password, salt, 64)) as Buffer;
-  const storedKey = Buffer.from(key, "hex");
-  return (
-    storedKey.length === derivedKey.length &&
-    timingSafeEqual(storedKey, derivedKey)
-  );
-}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
@@ -84,6 +34,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           !customer ||
           !(await passwordMatches(password, customer.passwordHash))
         ) {
+          return null;
+        }
+        if (customer.emailVerificationRequired && !customer.emailVerifiedAt) {
           return null;
         }
 

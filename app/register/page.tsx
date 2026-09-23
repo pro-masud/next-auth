@@ -22,12 +22,14 @@ export default function RegisterPage() {
   const [values, setValues] = useState<FormValues>(initialValues);
   const [errors, setErrors] = useState<FormErrors>({});
   const [message, setMessage] = useState("");
+  const [verificationUrl, setVerificationUrl] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   function handleChange(name: keyof FormValues, value: string) {
     setValues((currentValues) => ({ ...currentValues, [name]: value }));
     setErrors((currentErrors) => ({ ...currentErrors, [name]: "" }));
     setMessage("");
+    setVerificationUrl("");
   }
 
   function validateForm(formValues: FormValues): FormErrors {
@@ -84,6 +86,7 @@ export default function RegisterPage() {
       const result = (await response.json()) as {
         error?: string;
         message?: string;
+        verificationUrl?: string;
       };
 
       if (!response.ok) {
@@ -99,7 +102,10 @@ export default function RegisterPage() {
         return;
       }
 
-      setMessage(result.message ?? "Your account has been created.");
+      setMessage(
+        result.message ?? "Account created. Check your email to verify it.",
+      );
+      setVerificationUrl(result.verificationUrl ?? "");
       setValues(initialValues);
     } catch {
       setMessage("We could not connect to the registration service.");
@@ -232,6 +238,11 @@ export default function RegisterPage() {
             <p className="form-message" role="status">
               {message}
             </p>
+          )}
+          {verificationUrl && (
+            <a className="auth-switch" href={verificationUrl}>
+              Open verification link
+            </a>
           )}
           <p className="auth-switch">
             Already have an account? <Link href="/login">Sign in</Link>

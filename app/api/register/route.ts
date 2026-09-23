@@ -1,50 +1,18 @@
+import {
+  createEmailVerificationToken,
+  hashPassword,
+  readCustomers,
+  writeCustomers,
+  type CustomerRecord,
+} from "@/lib/customers";
+import { sendVerificationEmail } from "@/lib/email";
 import { NextResponse } from "next/server";
-import { randomBytes, scrypt as scryptCallback } from "node:crypto";
-import { promises as fs } from "node:fs";
-import path from "node:path";
-import { promisify } from "node:util";
-
-const scrypt = promisify(scryptCallback);
-const customersFile = path.join(
-  process.cwd(),
-  ".data",
-  "registration",
-  "customers.json",
-);
-
-type CustomerRecord = {
-  id: string;
-  name: string;
-  email: string;
-  passwordHash: string;
-  createdAt: string;
-  role: "customer";
-  loginCount: number;
-  lastLoginAt?: string;
-};
 
 type RegistrationPayload = {
   name?: unknown;
   email?: unknown;
   password?: unknown;
 };
-
-async function readCustomers(): Promise<CustomerRecord[]> {
-  try {
-    const file = await fs.readFile(customersFile, "utf8");
-    const parsed = JSON.parse(file);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
-    throw error;
-  }
-}
-
-async function hashPassword(password: string) {
-  const salt = randomBytes(16).toString("hex");
-  const derivedKey = (await scrypt(password, salt, 64)) as Buffer;
-  return `${salt}:${derivedKey.toString("hex")}`;
-}
 
 export async function POST(request: Request) {
   try {
@@ -76,26 +44,38 @@ export async function POST(request: Request) {
       );
     }
 
+    const verification = createEmailVerificationToken();
+
     const customer: CustomerRecord = {
-      id: randomBytes(12).toString("hex"),
+      id: crypto.randomUUID(),
       name,
       email,
       passwordHash: await hashPassword(password),
       createdAt: new Date().toISOString(),
       role: "customer",
       loginCount: 0,
+      emailVerificationRequired: true,
+      emailVerificationTokenHash: verification.tokenHash,
+      emailVerificationExpiresAt: verification.expiresAt,
     };
 
+    const emailResult = await sendVerificationEmail({
+      email,
+      name,
+      token: verification.token,
+    });
     customers.push(customer);
-    await fs.mkdir(path.dirname(customersFile), { recursive: true });
-    await fs.writeFile(
-      customersFile,
-      `${JSON.stringify(customers, null, 2)}\n`,
-      "utf8",
-    );
+    await writeCustomers(customers);
 
     return NextResponse.json(
-      { message: "Your account has been created." },
+      {
+        message: emailResult.sent
+          ? "Account created. Check your email to verify it."
+          : "Account created. Open the development verification link below.",
+        verificationUrl: emailResult.sent
+          ? undefined
+          : emailResult.verificationUrl,
+      },
       { status: 201 },
     );
   } catch {
